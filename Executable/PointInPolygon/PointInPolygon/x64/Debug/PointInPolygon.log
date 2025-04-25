@@ -4,4 +4,11 @@ E:\CProjects\KINPO\Executable\PointInPolygon\PointInPolygon.cpp(107,58): warning
 E:\CProjects\KINPO\Executable\PointInPolygon\PointInPolygon.cpp(110,54): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
 E:\CProjects\KINPO\Executable\PointInPolygon\PointInPolygon.cpp(113,58): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
 E:\CProjects\KINPO\Executable\PointInPolygon\PointInPolygon.cpp(116,54): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
+E:\CProjects\KINPO\Executable\PointInPolygon\PointInPolygon.cpp(146,49): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
+E:\CProjects\KINPO\Executable\PointInPolygon\PointInPolygon.cpp(149,54): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
+E:\CProjects\KINPO\Executable\PointInPolygon\PointInPolygon.cpp(152,49): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
+E:\CProjects\KINPO\Executable\PointInPolygon\PointInPolygon.cpp(155,54): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
+E:\CProjects\KINPO\Executable\PointInPolygon\PointInPolygon.cpp(158,49): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
+E:\CProjects\KINPO\Executable\PointInPolygon\PointInPolygon.cpp(244,11): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+E:\CProjects\KINPO\Executable\PointInPolygon\PointInPolygon.cpp(273,11): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
   PointInPolygon.vcxproj -> E:\CProjects\KINPO\Executable\PointInPolygon\x64\Debug\PointInPolygon.exe

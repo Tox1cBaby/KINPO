@@ -117,6 +117,49 @@ void readInputFile(const string& filename, Polygon& polygon, Point& testPoint)
 
         polygon.vertices.push_back({ x, y });
     }
+
+    // Поиск секции Point
+    while (getline(file, line))
+    {
+        lineNum++;
+
+        if (line == "Point:")
+        {
+            pointSectionFound = true;
+            break;
+        }
+    }
+
+    if (!pointSectionFound)
+        throwError(POINT_SECTION_NOT_FOUND, lineNum);
+
+    // Чтение координат тестируемой точки
+    if (!getline(file, line))
+        throwError(POINT_FORMAT_ERROR, lineNum + 1);
+
+    lineNum++;
+
+    size_t pos = 0;
+    double x, y;
+
+    if (!readDouble(line, pos, x))
+        throwError(POINT_FORMAT_ERROR, lineNum, pos);
+
+    if (!isValidCoordinate(x))
+        throwError(COORDINATE_OUT_OF_RANGE, lineNum, pos);
+
+    if (!readDouble(line, pos, y))
+        throwError(POINT_FORMAT_ERROR, lineNum, pos);
+
+    if (!isValidCoordinate(y))
+        throwError(COORDINATE_OUT_OF_RANGE, lineNum, pos);
+
+    if (pos != line.length())
+        throwError(POINT_FORMAT_ERROR, lineNum, pos);
+
+    testPoint = { x, y };
+
+    file.close();
 }
 
 // Чтение числа с плавающей точкой из строки
@@ -258,22 +301,75 @@ bool isPointInPolygon(const Polygon& polygon, const Point& point)
     return inside;
 }
 
+// Вывода результата
+void writeResult(const string& outputFile, const Point& testPoint, bool isInside)
+{
+    // Открытие выходного файла
+    ofstream outFile(outputFile);
+    if (!outFile.is_open())
+        throwError(OUTPUT_FILE_ERROR);
+
+    // Запись результата
+    if (isInside)
+        outFile << "Точка (" << testPoint.x << ", " << testPoint.y << ") принадлежит многоугольнику." << endl;
+    else
+        outFile << "Точка (" << testPoint.x << ", " << testPoint.y << ") не принадлежит многоугольнику." << endl;
+
+    outFile.close();
+}
+
 int main(int argc, char* argv[])
 {
     setlocale(LC_ALL, "");
 
-    // Проверка количества аргументов
-    if (argc != 3)
-        throwError(WRONG_ARGS_COUNT);
+    try
+    {
+        // Проверка количества аргументов
+        if (argc != 3)
+            throwError(WRONG_ARGS_COUNT);
 
-    string inputFile = argv[1];
-    string outputFile = argv[2];
+        string inputFile = argv[1];
+        string outputFile = argv[2];
 
-    Polygon polygon;
-    Point testPoint;
+        Polygon polygon;
+        Point testPoint;
 
-    // Чтение данных из файла
-    readInputFile(inputFile, polygon, testPoint);
+        // Чтение данных из файла
+        readInputFile(inputFile, polygon, testPoint);
 
-    return 0;
+        // Проверка принадлежности точки многоугольнику
+        bool isInside = isPointInPolygon(polygon, testPoint);
+
+        writeResult(outputFile, testPoint, isInside);
+
+        return 0;
+    }
+    catch (const Error& error)
+    {
+        cout << getErrorMessage(error) << endl;
+
+        if (!error.str.empty())
+            cout << "Строка: " << error.str << endl;
+
+        if (error.line_num > 0)
+        {
+            cout << "Строка: " << error.line_num;
+
+            if (error.col_num > 0)
+                cout << ", Позиция: " << error.col_num;
+
+            cout << endl;
+        }
+        return 1;
+    }
+    catch (const exception& e)
+    {
+        cout << "Произошла непредвиденная ошибка: " << e.what() << endl;
+        return 1;
+    }
+    catch (...)
+    {
+        cout << "Произошла неизвестная ошибка." << endl;
+        return 1;
+    }
 }
