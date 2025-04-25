@@ -193,6 +193,71 @@ bool isValidCoordinate(double coord)
     return coord >= MIN_COORDINATE && coord <= MAX_COORDINATE;
 }
 
+// Проверка порядка обхода вершин многоугольника
+bool checkVerticesOrder(const Polygon& polygon)
+{
+    // Проверяем, что вершины образуют многоугольник без самопересечений
+    // Для простоты проверим только, что полигон не является "бантиком"
+    int n = polygon.vertices.size();
+    if (n < 3)
+        return false;
+
+    // Вычисляем площадь многоугольника по формуле Гаусса
+    double area = 0.0;
+    for (int i = 0; i < n; i++)
+    {
+        int j = (i + 1) % n;
+        area += polygon.vertices[i].x * polygon.vertices[j].y;
+        area -= polygon.vertices[j].x * polygon.vertices[i].y;
+    }
+
+    area = abs(area) / 2.0;
+
+    // Если площадь близка к нулю, то вершины, возможно, указаны неправильно
+    if (area < 1e-10)
+        return false;
+
+    return true;
+}
+
+// Проверка принадлежности точки многоугольнику
+bool isPointInPolygon(const Polygon& polygon, const Point& point)
+{
+    // Проверка на корректность порядка вершин
+    if (!checkVerticesOrder(polygon))
+        throwError(INCORRECT_VERTICES_ORDER);
+
+    int n = polygon.vertices.size();
+    bool inside = false;
+
+    // Алгоритм трассировки лучом (Ray Casting Algorithm)
+    for (int i = 0, j = n - 1; i < n; j = i++)
+    {
+        const Point& vi = polygon.vertices[i];
+        const Point& vj = polygon.vertices[j];
+
+        // Проверка, находится ли точка на стороне многоугольника
+        if (((vi.y > point.y) != (vj.y > point.y)) &&
+            (point.x < (vj.x - vi.x) * (point.y - vi.y) / (vj.y - vi.y) + vi.x))
+        {
+            inside = !inside;
+        }
+
+        // Точка лежит на стороне многоугольника
+        double crossProduct = (point.x - vi.x) * (vj.y - vi.y) - (point.y - vi.y) * (vj.x - vi.x);
+        if (abs(crossProduct) < 1e-10)
+        {
+            double dotProduct = (point.x - vi.x) * (vj.x - vi.x) + (point.y - vi.y) * (vj.y - vi.y);
+            double squaredLength = (vj.x - vi.x) * (vj.x - vi.x) + (vj.y - vi.y) * (vj.y - vi.y);
+
+            if (dotProduct >= 0 && dotProduct <= squaredLength)
+                return true; // Точка лежит на стороне
+        }
+    }
+
+    return inside;
+}
+
 int main(int argc, char* argv[])
 {
     setlocale(LC_ALL, "");
