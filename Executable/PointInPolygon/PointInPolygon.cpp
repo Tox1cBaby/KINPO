@@ -1,20 +1,60 @@
-﻿// PointInPolygon.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
-
+﻿
 #include <iostream>
+#include "PointInPolygon.h"
 
-int main()
+using namespace std;
+
+// Функции для работы с ошибками
+string getErrorMessage(const Error& error)
 {
-    std::cout << "Hello World!\n";
+    switch (error.type)
+    {
+    case FILE_NOT_FOUND:
+        return "Файл с входными данными указан некорректно. Файл может не существовать.";
+    case OUTPUT_FILE_ERROR:
+        return "Выходной файл указан некорректно. Возможно, указанное расположение не существует или отсутствуют права на запись.";
+    case WRONG_ARGS_COUNT:
+        return "Программа принимает два аргумента: <путь к входному файлу> <путь к выходному файлу>";
+    case VERTEXES_SECTION_NOT_FOUND:
+        return "Неверная структура входного файла. Раздел Vertexes не найден.";
+    case POINT_SECTION_NOT_FOUND:
+        return "Неверная структура входного файла. Раздел Point не найден.";
+    case VERTEX_COUNT_TOO_SMALL:
+        return "Ошибка в разделе Vertexes: количество вершин должно быть не менее 3.";
+    case VERTEX_COUNT_TOO_BIG:
+        return "Ошибка в разделе Vertexes: количество вершин не должно превышать 100.";
+    case VERTEX_FORMAT_ERROR:
+        return "Ошибка формата координат вершин.";
+    case POINT_FORMAT_ERROR:
+        return "Ошибка формата координат точки.";
+    case COORDINATE_OUT_OF_RANGE:
+        return "Ошибка: значение координаты выходит за допустимый диапазон от -1000 до 1000";
+    case INCORRECT_VERTICES_ORDER:
+        return "Ошибка: вершины многоугольника должны быть указаны в порядке их обхода (по часовой или против часовой стрелки).";
+    default:
+        return "Неизвестная ошибка.";
+    }
 }
 
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
+void throwError(enum error_type type, int line, int col, char symbol, const string& str)
+{
+    Error error = { type, line, col, symbol, str };
+    throw error;
+}
 
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
+// Проверка корректности координаты
+bool isValidCoordinate(double coord)
+{
+    return coord >= MIN_COORDINATE && coord <= MAX_COORDINATE;
+}
+
+int main(int argc, char* argv[])
+{
+    setlocale(LC_ALL, "");
+
+    // Проверка количества аргументов
+    if (argc != 3)
+        throwError(WRONG_ARGS_COUNT);
+
+    return 0;
+}
