@@ -42,6 +42,151 @@ void throwError(enum error_type type, int line, int col, char symbol, const stri
     throw error;
 }
 
+// Чтение данных из файла
+void readInputFile(const string& filename, Polygon& polygon, Point& testPoint)
+{
+    ifstream file(filename);
+
+    if (!file.is_open())
+        throwError(FILE_NOT_FOUND);
+
+    string line;
+    int lineNum = 0;
+    bool vertexesSectionFound = false;
+    bool pointSectionFound = false;
+    int vertexCount = 0;
+
+    // Поиск секции Vertexes
+    while (getline(file, line))
+    {
+        lineNum++;
+
+        if (line == "Vertexes:")
+        {
+            vertexesSectionFound = true;
+            break;
+        }
+    }
+
+    if (!vertexesSectionFound)
+        throwError(VERTEXES_SECTION_NOT_FOUND, lineNum);
+
+    // Чтение количества вершин
+    if (!getline(file, line))
+        throwError(VERTEX_COUNT_TOO_SMALL, lineNum + 1);
+
+    lineNum++;
+
+    try
+    {
+        vertexCount = stoi(line);
+    }
+    catch (...)
+    {
+        throwError(VERTEX_FORMAT_ERROR, lineNum, 0);
+    }
+
+    if (vertexCount < MIN_VERTICES) throwError(VERTEX_COUNT_TOO_SMALL, lineNum);
+
+    if (vertexCount > MAX_VERTICES) throwError(VERTEX_COUNT_TOO_BIG, lineNum);
+
+    // Чтение координат вершин
+    for (int i = 0; i < vertexCount; i++)
+    {
+        if (!getline(file, line)) throwError(VERTEX_FORMAT_ERROR, lineNum + 1);
+
+        lineNum++;
+
+        size_t pos = 0;
+        double x, y;
+
+        if (!readDouble(line, pos, x))
+            throwError(VERTEX_FORMAT_ERROR, lineNum, pos);
+
+        if (!isValidCoordinate(x))
+            throwError(COORDINATE_OUT_OF_RANGE, lineNum, pos);
+
+        if (!readDouble(line, pos, y))
+            throwError(VERTEX_FORMAT_ERROR, lineNum, pos);
+
+        if (!isValidCoordinate(y))
+            throwError(COORDINATE_OUT_OF_RANGE, lineNum, pos);
+
+        if (pos != line.length())
+            throwError(VERTEX_FORMAT_ERROR, lineNum, pos);
+
+        polygon.vertices.push_back({ x, y });
+    }
+}
+
+// Чтение числа с плавающей точкой из строки
+bool readDouble(const string& str, size_t& pos, double& value)
+{
+    size_t start = pos;
+
+    // Пропускаем начальные пробелы
+    while (pos < str.length() && isspace(str[pos]))
+        pos++;
+
+    if (pos >= str.length())
+        return false;
+
+    // Проверяем знак числа
+    bool negative = false;
+    if (str[pos] == '-')
+    {
+        negative = true;
+        pos++;
+    }
+    else if (str[pos] == '+')
+        pos++;
+
+    // Читаем цифры до десятичной точки
+    double result = 0.0;
+    bool hasDigits = false;
+
+    while (pos < str.length() && isdigit(str[pos]))
+    {
+        result = result * 10.0 + (str[pos] - '0');
+        hasDigits = true;
+        pos++;
+    }
+
+    // Читаем десятичную дробь
+    if (pos < str.length() && str[pos] == '.')
+    {
+        pos++;
+
+        double fraction = 0.0;
+        double scale = 0.1;
+        int decimalPlaces = 0;
+
+        while (pos < str.length() && isdigit(str[pos]) && decimalPlaces < MAX_DECIMAL_PLACES)
+        {
+            fraction += (str[pos] - '0') * scale;
+            scale *= 0.1;
+            decimalPlaces++;
+            pos++;
+        }
+
+        // Пропускаем лишние знаки после запятой
+        while (pos < str.length() && isdigit(str[pos]))
+            pos++;
+
+        result += fraction;
+    }
+
+    if (!hasDigits) return false;
+
+    value = negative ? -result : result;
+
+    // Проверяем, что после числа идут только пробелы
+    while (pos < str.length() && isspace(str[pos]))
+        pos++;
+
+    return true;
+}
+
 // Проверка корректности координаты
 bool isValidCoordinate(double coord)
 {
@@ -55,6 +200,15 @@ int main(int argc, char* argv[])
     // Проверка количества аргументов
     if (argc != 3)
         throwError(WRONG_ARGS_COUNT);
+
+    string inputFile = argv[1];
+    string outputFile = argv[2];
+
+    Polygon polygon;
+    Point testPoint;
+
+    // Чтение данных из файла
+    readInputFile(inputFile, polygon, testPoint);
 
     return 0;
 }
